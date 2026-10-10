@@ -75,13 +75,35 @@ npx cap sync android
 cd android && ./gradlew assembleRelease
 ```
 
-产物：`app/android/app/build/outputs/apk/release/app-release.apk`
+产物：`app/android/app/build/outputs/apk/release/dwell-<版本号>.apk`
 
 跑端到端测试（三种协议各打一遍 mock 服务器，55 项断言）：
 
 ```bash
 npm install && npm test
 ```
+
+### 版本号
+
+**别再手写 `versionCode` / `versionName`**——`build.gradle` 会跟着 git tag 走：
+
+```bash
+git tag v0.3.0 && git push origin v0.3.0
+cd app/android && DWELL_VERSION=v0.3.0 ./gradlew assembleRelease
+```
+
+`versionCode` 编成 `主×10000 + 次×100 + 修`，天然单调递增：
+
+| tag | versionCode | versionName |
+|---|---|---|
+| v0.1.0 | 100 | 0.1.0 |
+| v0.2.0 | 200 | 0.2.0 |
+| v1.0.0 | 10000 | 1.0.0 |
+
+不传 `DWELL_VERSION` 时会自己去读 `git describe --tags`。两处都拿不到就退回
+`0.0.0-dev` 并在构建日志里打警告——不会闷声发一个版本号对不上的包。
+
+CI 里 `DWELL_VERSION` 由 tag 自动注入。
 
 ### 签名
 
