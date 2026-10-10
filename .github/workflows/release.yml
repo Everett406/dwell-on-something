@@ -23,6 +23,18 @@ jobs:
           distribution: temurin
           java-version: 21
 
+      - name: 缓存 Gradle 和 Android 构建
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            app/android/.gradle
+            app/android/app/build
+          key: gradle-${{ runner.os }}-${{ hashFiles('app/android/**/*.gradle', 'app/package-lock.json') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-
+
       - name: 装 Capacitor
         run: |
           cd app
@@ -46,11 +58,16 @@ jobs:
 
       - name: 发 Release
         if: startsWith(github.ref, 'refs/tags/v')
-        env:
-          # github.token 是 Actions 自动发的令牌，不走 repository secrets，
-          # 所以 fork 也能用（fork 读不到 secrets）
-          GH_TOKEN: ${{ github.token }}
         run: |
+          # fork 仓库的 workflow 拿不到 GITHUB_TOKEN（GitHub 的安全策略：
+          # 防止别人通过改 fork 的 workflow 窃取凭据）。没有令牌就跳过，
+          # 安装包已经在上面的 artifact 里，发布走 tools/upload-apk.js。
+          if [ -z "${GITHUB_TOKEN:-}" ]; then
+            echo "::warning::这是 fork，CI 没有 GITHUB_TOKEN，自动发 Release 跳过。"
+            echo "::warning::安装包已作为 artifact 上传。本地发版："
+            echo "::warning::  node tools/upload-apk.js"
+            exit 0
+          fi
           APK=$(ls app/android/app/build/outputs/apk/release/*.apk | head -1)
           VERSION="${GITHUB_REF_NAME}"
           cp "$APK" "dwell-${VERSION}.apk"

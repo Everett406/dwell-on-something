@@ -100,10 +100,18 @@ npm install && npm test
 ### 发版
 
 ```bash
+# 1. 打 tag，CI 会构建并把 APK 作为 artifact 上传
 git tag v0.1.1 && git push origin v0.1.1
+
+# 2. 把本地构建好的包发成 Release
+cd app && ./gradlew assembleRelease && cd ..
+node tools/upload-apk.js
 ```
 
-打 tag 触发 GitHub Actions，构建完自动发 Release 并附上 APK。
+**为什么第 2 步要手动**：GitHub 不给 fork 仓库的 workflow 发 `GITHUB_TOKEN`
+（安全策略，防止别人通过改 fork 的 workflow 窃取凭据），所以 CI 能构建、能传 artifact，
+但发不了 Release。想让 CI 一条龙，需要在仓库设置里把 fork 关系断开（detach）——
+之后 CI 就有完整令牌了，`gh release` 那段代码会自动生效。
 
 ## 授权
 
