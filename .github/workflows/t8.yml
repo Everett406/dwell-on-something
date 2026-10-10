@@ -1,7 +1,0 @@
-name: t8
-on: workflow_dispatch
-jobs:
-  t:
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "值=[${{ secrets.ANDROID_KEYSTORE_BASE64 }}]"

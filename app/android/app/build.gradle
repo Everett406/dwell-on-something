@@ -17,17 +17,18 @@ android {
         }
     }
     signingConfigs {
-        // 有密钥就走正式签名（能覆盖升级）；没密钥就退回 debug（能装，但不能覆盖）
+        // keystore/dwell.jks 是有意提交进仓库的自签名个人证书（fork 的 CI 读不到 secrets）。
+        // 环境变量优先，方便你自己换成别的密钥。
         dwell {
             storeFile file(System.getenv('DWELL_KEYSTORE') ?: '../../../keystore/dwell.jks')
-            storePassword System.getenv('DWELL_PASS') ?: ''
+            storePassword System.getenv('DWELL_PASS') ?: 'dwellon2026'
             keyAlias System.getenv('DWELL_ALIAS') ?: 'dwell'
-            keyPassword System.getenv('DWELL_PASS') ?: ''
+            keyPassword System.getenv('DWELL_PASS') ?: 'dwellon2026'
         }
     }
     buildTypes {
         release {
-            signingConfig System.getenv('DWELL_PASS') ? signingConfigs.dwell : signingConfigs.debug
+            signingConfig signingConfigs.dwell
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }

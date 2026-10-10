@@ -28,25 +28,11 @@ jobs:
           cd app
           npm install --no-audit --no-fund
 
-      - name: 取签名密钥
-        run: |
-          mkdir -p keystore
-          if [ -n "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" ]; then
-            echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > keystore/dwell.jks
-            echo "用仓库密钥正式签名（可覆盖升级）"
-          else
-            echo "没配密钥，退回 debug 签名（可装，但不能覆盖升级）"
-          fi
-
       - name: 同步到原生工程
         run: cd app && npx cap sync android
 
       - name: 构建
         working-directory: app
-        env:
-          DWELL_KEYSTORE: ${{ github.workspace }}/keystore/dwell.jks
-          DWELL_PASS: ${{ secrets.ANDROID_KEYSTORE_PASS }}
-          DWELL_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
         run: |
           cd android
           ./gradlew assembleRelease --no-daemon
@@ -60,8 +46,6 @@ jobs:
 
       - name: 发 Release
         if: startsWith(github.ref, 'refs/tags/v')
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           APK=$(ls app/android/app/build/outputs/apk/release/*.apk | head -1)
           VERSION="${GITHUB_REF_NAME}"

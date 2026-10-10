@@ -8,10 +8,10 @@ app/android/local.properties
 .gradle/
 build/
 
-# 签名密钥：只发 base64 进 Secrets，文件本身不进仓库
-*.jks
+# 注意：keystore/dwell.jks 是有意提交的（见 README「签名」一节）
+# fork 的 Actions 拿不到 repository secrets，不提交 CI 就没法签名
 *.keystore
-keystore/
+!keystore/dwell.jks
 
 # 编辑器 / 系统
 .idea/
