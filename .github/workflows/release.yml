@@ -45,6 +45,10 @@ jobs:
 
       - name: 构建
         working-directory: app
+        env:
+          # 版本号跟着 tag 走。手动触发时 ref_name 是分支名（不合 semver），
+          # build.gradle 会自动退回 0.0.0-dev 并打警告——反正那次不发版。
+          DWELL_VERSION: ${{ github.ref_name }}
         run: |
           cd android
           ./gradlew assembleRelease --no-daemon
@@ -70,11 +74,10 @@ jobs:
           fi
           APK=$(ls app/android/app/build/outputs/apk/release/*.apk | head -1)
           VERSION="${GITHUB_REF_NAME}"
-          cp "$APK" "dwell-${VERSION}.apk"
           if gh release view "$VERSION" >/dev/null 2>&1; then
-            gh release upload "$VERSION" "dwell-${VERSION}.apk" --clobber
+            gh release upload "$VERSION" "$APK" --clobber
             echo "已覆盖更新 $VERSION 的安装包"
           else
-            gh release create "$VERSION" "dwell-${VERSION}.apk" --title "dwell ${VERSION}" --notes-file build-notes.md
+            gh release create "$VERSION" "$APK" --title "dwell ${VERSION}" --notes-file build-notes.md
             echo "已创建 $VERSION"
           fi

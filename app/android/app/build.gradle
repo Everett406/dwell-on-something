@@ -1,5 +1,34 @@
 apply plugin: 'com.android.application'
 
+// ── 版本号：跟着 git tag 走，别再手写 ─────────────────────────────────
+// CI 里传 DWELL_VERSION（= tag 名）；本地构建没传就从最近的 tag 猜，
+// 猜不到就退回 0.0.0-dev，但会打警告——免得发出去的包版本号对不上 tag。
+def resolveVersion = {
+    def raw = System.getenv('DWELL_VERSION')
+    if (!raw) {
+        try {
+            def out = new ByteArrayOutputStream()
+            def p = ['git','describe','--tags','--abbrev=0'].execute(null, rootDir)
+            p.waitForProcessOutput(out, out)
+            raw = p.exitValue() == 0 ? out.toString().trim() : null
+        } catch (Exception ignored) { }
+    }
+    if (!raw) {
+        logger.warn("DWELL_VERSION 没设、git tag 也读不到，版本号退回 0.0.0-dev")
+        return [code: 1, name: '0.0.0-dev']
+    }
+    def m = (raw =~ /v?(\d+)\.(\d+)\.(\d+)/)
+    if (!m) {
+        logger.warn("版本号 ${raw} 不是 v主.次.修 格式，退回 0.0.0-dev")
+        return [code: 1, name: '0.0.0-dev']
+    }
+    def major = m[0][1] as int, minor = m[0][2] as int, patch = m[0][3] as int
+    // Android 的 versionCode 是整数；编成 主*10000+次*100+修，天然单调递增
+    //   v0.1.0 → 100    v0.2.0 → 200    v1.0.0 → 10000
+    [code: major * 10000 + minor * 100 + patch, name: "${major}.${minor}.${patch}"]
+}
+def ver = resolveVersion()
+
 android {
     namespace = "com.dwell.app"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -7,8 +36,8 @@ android {
         applicationId "com.dwell.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        versionCode ver.code
+        versionName ver.name
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -24,6 +53,10 @@ android {
             storePassword System.getenv('DWELL_PASS') ?: 'dwellon2026'
             keyAlias System.getenv('DWELL_ALIAS') ?: 'dwell'
             keyPassword System.getenv('DWELL_PASS') ?: 'dwellon2026'
+            // minSdk 24（Android 7.0）以上只需 v2+；v3 加上是给以后换密钥用的轮换能力
+            enableV1Signing false
+            enableV2Signing true
+            enableV3Signing true
         }
     }
     buildTypes {
@@ -31,6 +64,11 @@ android {
             signingConfig signingConfigs.dwell
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    applicationVariants.configureEach { variant ->
+        variant.outputs.configureEach {
+            outputFileName = "dwell-${ver.name}.apk"
         }
     }
 }
