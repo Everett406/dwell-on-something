@@ -1,0 +1,24 @@
+# 构建产物 / 依赖
+node_modules/
+app/android/.gradle/
+app/android/build/
+app/android/app/build/
+app/android/capacitor-cordova-android-plugins/build/
+app/android/local.properties
+.gradle/
+build/
+
+# 签名密钥：只发 base64 进 Secrets，文件本身不进仓库
+*.jks
+*.keystore
+keystore/
+
+# 编辑器 / 系统
+.idea/
+.vscode/
+.DS_Store
+*.iml
+
+# 打包出来的 APK
+*.apk
+*.aab

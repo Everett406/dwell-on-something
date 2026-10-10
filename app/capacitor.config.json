@@ -1,0 +1,14 @@
+{
+  "appId": "com.dwell.app",
+  "appName": "dwell",
+  "webDir": "www",
+  "android": {
+    "allowMixedContent": true,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": true,
+    "backgroundColor": "#faf9f5"
+  },
+  "server": {
+    "androidScheme": "https"
+  }
+}

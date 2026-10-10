@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">dwell</string>
+    <string name="title_activity_main">dwell</string>
+    <string name="package_name">com.dwell.app</string>
+    <string name="custom_url_scheme">com.dwell.app</string>
+</resources>

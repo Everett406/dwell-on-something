@@ -1,0 +1,13 @@
+{
+  "name": "dwell-build-tools",
+  "version": "1.0.0",
+  "private": true,
+  "description": "dwell 的构建工具与端到端测试",
+  "scripts": {
+    "test": "node test/e2e.js"
+  },
+  "dependencies": {
+    "jsdom": "^26.0.0",
+    "libsodium-wrappers": "^0.7.15"
+  }
+}

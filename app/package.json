@@ -1,0 +1,16 @@
+{
+  "name": "dwell",
+  "version": "1.0.0",
+  "description": "dwell — 一套住着人的 AI 聊天界面",
+  "private": true,
+  "scripts": {
+    "sync": "cap sync android",
+    "build:debug": "cd android && ./gradlew assembleDebug",
+    "build:release": "cd android && ./gradlew assembleRelease"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.5.3",
+    "@capacitor/cli": "^8.5.3",
+    "@capacitor/core": "^8.5.3"
+  }
+}
