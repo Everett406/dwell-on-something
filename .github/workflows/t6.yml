@@ -1,0 +1,10 @@
+name: t6
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+jobs:
+  t:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo tags-and-dispatch

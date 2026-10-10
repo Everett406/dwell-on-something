@@ -1,0 +1,14 @@
+name: t4
+on: workflow_dispatch
+jobs:
+  t:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: node -v
+      - uses: actions/upload-artifact@v4
+        with:
+          name: x
+          path: README.md
