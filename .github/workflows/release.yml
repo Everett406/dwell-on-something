@@ -46,6 +46,10 @@ jobs:
 
       - name: 发 Release
         if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          # github.token 是 Actions 自动发的令牌，不走 repository secrets，
+          # 所以 fork 也能用（fork 读不到 secrets）
+          GH_TOKEN: ${{ github.token }}
         run: |
           APK=$(ls app/android/app/build/outputs/apk/release/*.apk | head -1)
           VERSION="${GITHUB_REF_NAME}"
