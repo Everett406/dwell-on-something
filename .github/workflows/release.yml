@@ -5,6 +5,9 @@ on:
     tags: ['v*']
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -30,10 +33,9 @@ jobs:
           mkdir -p keystore
           if [ -n "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" ]; then
             echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > keystore/dwell.jks
-            echo "用仓库密钥正式签名"
+            echo "用仓库密钥正式签名（可覆盖升级）"
           else
-            # 没密钥就退回 debug 签名：能装，但每次重跑 key 都变，不能覆盖升级
-            echo "没配密钥，退回 debug 签名"
+            echo "没配密钥，退回 debug 签名（可装，但不能覆盖升级）"
           fi
 
       - name: 同步到原生工程
@@ -47,8 +49,7 @@ jobs:
           DWELL_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
         run: |
           cd android
-          ./gradlew assembleRelease --no-daemon --stacktrace
-          echo "--- 产物 ---"
+          ./gradlew assembleRelease --no-daemon
           ls -la app/build/outputs/apk/release/
 
       - name: 上传安装包
@@ -59,12 +60,16 @@ jobs:
 
       - name: 发 Release
         if: startsWith(github.ref, 'refs/tags/v')
-        uses: softprops/action-gh-release@v2
-        with:
-          files: app/android/app/build/outputs/apk/release/*.apk
-          body: |
-            把下面的 APK 传到手机上打开安装即可（需要允许「安装未知来源应用」）。
-
-            APK 是自签名包。第一次装的时候手机会拦一下，选「继续安装」。
-
-            装完进 **设置 → 模型接入**，选协议、填地址和令牌，就能开聊。
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          APK=$(ls app/android/app/build/outputs/apk/release/*.apk | head -1)
+          VERSION="${GITHUB_REF_NAME}"
+          cp "$APK" "dwell-${VERSION}.apk"
+          if gh release view "$VERSION" >/dev/null 2>&1; then
+            gh release upload "$VERSION" "dwell-${VERSION}.apk" --clobber
+            echo "已覆盖更新 $VERSION 的安装包"
+          else
+            gh release create "$VERSION" "dwell-${VERSION}.apk" --title "dwell ${VERSION}" --notes-file build-notes.md
+            echo "已创建 $VERSION"
+          fi
