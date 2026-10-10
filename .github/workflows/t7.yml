@@ -1,0 +1,9 @@
+name: t7
+on: workflow_dispatch
+permissions:
+  contents: write
+jobs:
+  t:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "只有 permissions，没有 secret"
