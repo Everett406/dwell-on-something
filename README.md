@@ -1,3 +1,9 @@
+---
+
+> [!NOTE]
+> **本仓库已迁移至 Gitee**：<https://gitee.com/Everett5678/dwell-on-something>
+> GitHub 端仅作只读归档，新代码请推送到 Gitee。
+
 # dwell
 
 > **dwell** — 住下来。也是 *dwell on something*：老想着一件事，萦绕不去。
